@@ -1,48 +1,34 @@
-﻿using libplctag;
-using libplctag.DataTypes;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Timers;
-using Timer = System.Timers.Timer;
 
-/*Version 1.6
- * Added an if test in the while loop to detect if a vent has closed, upon closure we start taking photos.
- * Then we break out of the while loop and take more photos
- * 
- * Photos, photos, everywhere!
- */
-/*
-Tags would be:
-Emergency stacks PLC is 1756-L72 ControlLogix5572, IP 172.30.201.3
-dryer 1 stack is opened E321531EVO01.ZSO
-dryer 1 stack is closed E321531EVO01.ZSC
-dryer 2 stack is opened E322531EVO01.ZSO
-dryer 2 stack is closed E322531EVO01.ZSC
 
-Vent stacks PLC is 1756-L71 ControlLogix5571, IP 172.30.201.2
-dryer 1 stack is opened D301070EV01.ZSO
-dryer 1 stack is closed D301070EV01.ZSC
-dryer 2 stack is opened D302070EV01.ZSO
-dryer 2 stack is closed D302070EV01.ZSC
-*/
 
 namespace PLCRead4
 {
         class Program
     {
-      
+       
         static void Main()
         {
-             // Read the value from the PLC
-            //TODO error check and retry the read.
-            void CheckStacks()
+            String dateToday = DateTime.Now.ToString("dd.MM.yyy");
+            //Setup Debugging
+            string debugPath = @".\ " + dateToday + ".txt";
+            StreamWriter debugLog;
+            using ( debugLog = File.CreateText(debugPath))
             {
-                try
+                if (!File.Exists(debugPath))
+                {
+                    debugLog.WriteLine($"Begin debug log.");
+                }
+            }
+          // Read the value from the PLC
+           void CheckStacks()
+            {
+                using (debugLog = File.AppendText(@".\ " + dateToday + ".txt"))
+                {
+                    try
                 {
                     PlcClass.dryerStack1.Read();
                 }
@@ -50,11 +36,16 @@ namespace PLCRead4
                 {
                     if (ex.Message == "ErrorTimeout")
                     {
-                        Console.WriteLine("Time out error " + ex.Message + "\n");
+                         
+                        //debugLog.WriteLine(ex.Message);
+                        debugLog.WriteLine("Time out error " + ex.Message + "For Dryer Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        
                     }
+                    
                     else
                     {
-                        Console.WriteLine(ex.Message);
+                            debugLog.WriteLine(ex.Message + "For Dryer Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        //Console.WriteLine(ex.Message);
                     }
 
                 }
@@ -66,11 +57,11 @@ namespace PLCRead4
                 {
                     if (ex.Message == "ErrorTimeout")
                     {
-                        Console.WriteLine("Time out error " + ex.Message + "\n");
-                    }
+                            debugLog.WriteLine("Time out error " + ex.Message + "For Dryer Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        }
                     else
                     {
-                        Console.WriteLine(ex.Message);
+                        debugLog.WriteLine(ex.Message + "For Dryer Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
                     }
 
                 }
@@ -82,27 +73,28 @@ namespace PLCRead4
                 {
                     if (ex.Message == "ErrorTimeout")
                     {
-                        Console.WriteLine("Time out error " + ex.Message + "\n");
-                    }
+                            debugLog.WriteLine("Time out error " + ex.Message + "For Vent Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        }
                     else
                     {
-                        Console.WriteLine(ex.Message);
+                        debugLog.WriteLine(ex.Message + "For Vent Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
                     }
 
                 }
-                try
-                {
-                    PlcClass.ventStack2.Read();
-                }
-                catch (libplctag.LibPlcTagException ex)
-                {
-                    if (ex.Message == "ErrorTimeout")
+                    try
                     {
-                        Console.WriteLine("Time out error " + ex.Message + "\n");
+                        PlcClass.ventStack2.Read();
                     }
-                    else
+                    catch (libplctag.LibPlcTagException ex)
                     {
-                        Console.WriteLine(ex.Message);
+                        if (ex.Message == "ErrorTimeout")
+                        {
+                            debugLog.WriteLine("Time out error " + ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        }
+                        else
+                        {
+                            debugLog.WriteLine(ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        }
                     }
                 }
              }
@@ -113,7 +105,6 @@ namespace PLCRead4
                 System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)WebRequest.Create("http://localhost/CameraGrab/index.php");
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             }
-
             void logToFile()
             {
                 string StartupPath = @".\";

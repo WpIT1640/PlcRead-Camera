@@ -8,6 +8,20 @@ using System.Threading.Tasks;
 
 namespace PLCRead4
 {
+    /*
+Tags would be:
+Emergency stacks PLC is 1756-L72 ControlLogix5572, IP 172.30.201.3
+dryer 1 stack is opened E321531EVO01.ZSO
+dryer 1 stack is closed E321531EVO01.ZSC
+dryer 2 stack is opened E322531EVO01.ZSO
+dryer 2 stack is closed E322531EVO01.ZSC
+
+Vent stacks PLC is 1756-L71 ControlLogix5571, IP 172.30.201.2
+dryer 1 stack is opened D301070EV01.ZSO
+dryer 1 stack is closed D301070EV01.ZSC
+dryer 2 stack is opened D302070EV01.ZSO
+dryer 2 stack is closed D302070EV01.ZSC
+*/
     public class PlcClass
     {
 
