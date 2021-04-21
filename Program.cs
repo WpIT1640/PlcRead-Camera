@@ -16,11 +16,14 @@ namespace PLCRead4
             //Setup Debugging
             string debugPath = @".\ " + dateToday + ".txt";
             StreamWriter debugLog;
-            using ( debugLog = File.CreateText(debugPath))
+            if (!File.Exists(debugPath))
             {
-                if (!File.Exists(debugPath))
+                using (debugLog = File.CreateText(debugPath))
                 {
-                    debugLog.WriteLine($"Begin debug log.");
+                    if (File.Exists(debugPath))
+                    {
+                        debugLog.WriteLine($"Begin debug log.");
+                    }
                 }
             }
           // Read the value from the PLC
