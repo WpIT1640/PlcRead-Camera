@@ -3,74 +3,15 @@ using System.IO;
 using System.Net;
 using System.Threading;
 
-
-
 namespace PLCRead4
 {
         class Program
     {
        static void Main()
         {
-            
-          
-         
-            // Output to Console
-            CheckStacks();
-            void cameraGrab()
-            {
-                System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)WebRequest.Create("http://localhost/CameraGrab/index.php");
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            }
-            void logToFile()
-            {
-                string StartupPath = @".\";
-                string Year = DateTime.Now.Year.ToString();
-                string Month = DateTime.Now.Month.ToString();
-                string Day = DateTime.Now.Day.ToString();
-                Directory.CreateDirectory(StartupPath + "\\" + Year + "\\" + Month + "\\" + Day);
-
-                string path = Year + @".\" + Month + @"\" + @"\" + Day + @"\" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
-                if (File.Exists(path))
-                {
-                    using (StreamWriter sw = File.AppendText(path))
-                    {
-                        if (PlcClass.dryerStack1.Value == false)
-                        {
-                            sw.WriteLine($"{DateTime.Now} Dryer stack 1 is closed");
-                        }
-                        else
-                        {
-                            sw.WriteLine($"{DateTime.Now} Dryer stack 1 is open");
-                        }
-
-                        if (PlcClass.dryerStack2.Value == false)
-                        {
-                            sw.WriteLine($"{DateTime.Now} Dryer stack 2 is closed");
-                        }
-                        else
-                        {
-                            sw.WriteLine($"{DateTime.Now} Dryer stack 2 is open");
-                        }
-                        if (PlcClass.ventStack1.Value == false)
-                        {
-                            sw.WriteLine($"{DateTime.Now} Vent stack 1 is closed");
-                        }
-                        else
-                        {
-                            sw.WriteLine($"{DateTime.Now} Vent stack 1 is open");
-                        }
-                        if (PlcClass.ventStack2.Value == false)
-                        {
-                            sw.WriteLine($"{DateTime.Now} Vent stack 2 is closed");
-                        }
-                        else
-                        {
-                            sw.WriteLine($"{DateTime.Now} Vent stack 2 is open");
-                        }
-                    }
-                }
-            }
-            
+            //start by checking the stacks state
+            CheckStacks();                  
+            /*
             if ( PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == true)
             {
                 cameraGrab(); //first picture when the stacks open
@@ -78,18 +19,18 @@ namespace PLCRead4
                 while (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == true)
                 {
                     CheckStacks();
-                    logToFile();
+                    LogToFile();
                     //as long as stacks are open we loop
                     if (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == false)
                     {
                         Thread.Sleep(30 * 1000);
-                        logToFile();
+                        LogToFile();
                         cameraGrab(); //initial picture 30 seconds after the stacks are closed
                         for (int i = 0; i < 4; i++)
                         {
                             Thread.Sleep(3 * 60 * 1000);
                             cameraGrab();
-                            logToFile();
+                            LogToFile();
                         }
                         CheckStacks();
                     }
@@ -97,22 +38,23 @@ namespace PLCRead4
                 //stacks have closed
               
                 Thread.Sleep(30 * 1000);
-                logToFile();
+                LogToFile();
                 cameraGrab(); //initial picture 30 seconds after the stacks are closed
                 for (int i = 0; i < 4; i++)
                 {
                     Thread.Sleep(3 * 60 * 1000);
                     cameraGrab();
-                    logToFile();
+                    LogToFile();
                 }
                 CheckStacks();
             }
             CheckStacks();
-
+            */
             while (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == false)
             {
                 //reinitliaze and check the tags
-                CheckStacks();        
+                CheckStacks();
+                LogToFile();
                 //check if stacks have opened
                 //true means the stacks have opened.
                 if (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == true)
@@ -122,30 +64,30 @@ namespace PLCRead4
                     while (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == true)
                     {
                         CheckStacks();
-                        logToFile();
+                        LogToFile();
                         //as long as stacks are open we loop
                         if (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == false)
                         {
                             Thread.Sleep(30 * 1000);
-                            logToFile();
+                            LogToFile();
                             cameraGrab(); //initial picture 30 seconds after the stacks are closed
                             for (int i = 0; i < 4; i++)
                             {
                                 Thread.Sleep(3 * 60 * 1000);
                                 cameraGrab();
-                                logToFile();
+                                LogToFile();
                             }
                             CheckStacks();
                         }
                     }
                     //camera grab
                     cameraGrab();
-                    logToFile();
+                    LogToFile();
                     for (int i = 0; i < 4; i++)
                     {
                         Thread.Sleep(3 * 60 * 1000);
                         cameraGrab();
-                        logToFile();
+                        LogToFile();
                     }
                     CheckStacks();
                 }
@@ -238,6 +180,67 @@ namespace PLCRead4
                     else
                     {
                         debugLog.WriteLine(ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                    }
+                }
+            }
+        }
+        private static void cameraGrab()
+        {
+            System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)WebRequest.Create("http://localhost/CameraGrab/index.php");
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        }
+
+        private static void LogToFile()
+        {
+            string StartupPath = @".\";
+            string Year = DateTime.Now.Year.ToString();
+            string Month = DateTime.Now.Month.ToString();
+            string Day = DateTime.Now.Day.ToString();
+            Directory.CreateDirectory(StartupPath + "\\" + Year + "\\" + Month + "\\" + Day);
+            string path = Year + @".\" + Month + @"\" + @"\" + Day + @"\" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
+            StreamWriter sw;
+            if (File.Exists(path))
+            {
+                return;
+            }
+            using (sw = File.CreateText(path))
+            {
+                if (File.Exists(path))
+                {
+                    sw.WriteLine($"Begin Log");
+
+                    if (PlcClass.dryerStack1.Value == false)
+                    {
+                        sw.WriteLine($"{DateTime.Now} Dryer stack 1 is closed");
+                    }
+                    else
+                    {
+                        sw.WriteLine($"{DateTime.Now} Dryer stack 1 is open");
+                    }
+
+                    if (PlcClass.dryerStack2.Value == false)
+                    {
+                        sw.WriteLine($"{DateTime.Now} Dryer stack 2 is closed");
+                    }
+                    else
+                    {
+                        sw.WriteLine($"{DateTime.Now} Dryer stack 2 is open");
+                    }
+                    if (PlcClass.ventStack1.Value == false)
+                    {
+                        sw.WriteLine($"{DateTime.Now} Furnace stack 1 is closed");
+                    }
+                    else
+                    {
+                        sw.WriteLine($"{DateTime.Now} Furnace stack 1 is open");
+                    }
+                    if (PlcClass.ventStack2.Value == false)
+                    {
+                        sw.WriteLine($"{DateTime.Now} Furnace stack 2 is closed");
+                    }
+                    else
+                    {
+                        sw.WriteLine($"{DateTime.Now} Furnace stack 2 is open");
                     }
                 }
             }
