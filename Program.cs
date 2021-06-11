@@ -9,98 +9,11 @@ namespace PLCRead4
 {
         class Program
     {
-       
-        static void Main()
+       static void Main()
         {
-            String dateToday = DateTime.Now.ToString("dd.MM.yyy");
-            //Setup Debugging
-            string debugPath = @".\ " + dateToday + ".txt";
-            StreamWriter debugLog;
-            if (!File.Exists(debugPath))
-            {
-                using (debugLog = File.CreateText(debugPath))
-                {
-                    if (File.Exists(debugPath))
-                    {
-                        debugLog.WriteLine($"Begin debug log.");
-                    }
-                }
-            }
-          // Read the value from the PLC
-           void CheckStacks()
-            {
-                using (debugLog = File.AppendText(@".\ " + dateToday + ".txt"))
-                {
-                    try
-                {
-                    PlcClass.dryerStack1.Read();
-                }
-                catch (libplctag.LibPlcTagException ex)
-                {
-                    if (ex.Message == "ErrorTimeout")
-                    {
-                         
-                        //debugLog.WriteLine(ex.Message);
-                        debugLog.WriteLine("Time out error " + ex.Message + "For Dryer Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                        
-                    }
-                    
-                    else
-                    {
-                            debugLog.WriteLine(ex.Message + "For Dryer Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                        //Console.WriteLine(ex.Message);
-                    }
-
-                }
-                try
-                {
-                    PlcClass.dryerStack2.Read();
-                }
-                catch (libplctag.LibPlcTagException ex)
-                {
-                    if (ex.Message == "ErrorTimeout")
-                    {
-                            debugLog.WriteLine("Time out error " + ex.Message + "For Dryer Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                        }
-                    else
-                    {
-                        debugLog.WriteLine(ex.Message + "For Dryer Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                    }
-
-                }
-                try
-                {
-                    PlcClass.ventStack1.Read();
-                }
-                catch (libplctag.LibPlcTagException ex)
-                {
-                    if (ex.Message == "ErrorTimeout")
-                    {
-                            debugLog.WriteLine("Time out error " + ex.Message + "For Vent Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                        }
-                    else
-                    {
-                        debugLog.WriteLine(ex.Message + "For Vent Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                    }
-
-                }
-                    try
-                    {
-                        PlcClass.ventStack2.Read();
-                    }
-                    catch (libplctag.LibPlcTagException ex)
-                    {
-                        if (ex.Message == "ErrorTimeout")
-                        {
-                            debugLog.WriteLine("Time out error " + ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                        }
-                        else
-                        {
-                            debugLog.WriteLine(ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                        }
-                    }
-                }
-             }
+            
+          
+         
             // Output to Console
             CheckStacks();
             void cameraGrab()
@@ -116,10 +29,10 @@ namespace PLCRead4
                 string Day = DateTime.Now.Day.ToString();
                 Directory.CreateDirectory(StartupPath + "\\" + Year + "\\" + Month + "\\" + Day);
 
-                string path = Year + @".\" + Month + @"\" + @"\" + Day + @"\" + DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
-                if (!File.Exists(path))
+                string path = Year + @".\" + Month + @"\" + @"\" + Day + @"\" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
+                if (File.Exists(path))
                 {
-                    using (StreamWriter sw = File.CreateText(path))
+                    using (StreamWriter sw = File.AppendText(path))
                     {
                         if (PlcClass.dryerStack1.Value == false)
                         {
@@ -238,8 +151,96 @@ namespace PLCRead4
                 }
                 CheckStacks();
             }
-            
         }
 
-     }
+        // Read the value from the PLC
+        private static void CheckStacks()
+        {
+            String dateToday = DateTime.Now.ToString("dd.MM.yyy");
+            //Setup Debugging
+            string debugPath = @".\ " + dateToday + ".txt";
+            StreamWriter debugLog;
+            if (!File.Exists(debugPath))
+            {
+                using (debugLog = File.CreateText(debugPath))
+                {
+                    if (File.Exists(debugPath))
+                    {
+                        debugLog.WriteLine($"Begin debug log.");
+                    }
+                }
+            }
+            using (debugLog = File.AppendText(@".\ " + dateToday + ".txt"))
+            {
+                try
+                {
+                    PlcClass.dryerStack1.Read();
+                }
+                catch (libplctag.LibPlcTagException ex)
+                {
+                    if (ex.Message == "ErrorTimeout")
+                    {
+
+                        //debugLog.WriteLine(ex.Message);
+                        debugLog.WriteLine("Time out error " + ex.Message + "For Dryer Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+
+                    }
+
+                    else
+                    {
+                        debugLog.WriteLine(ex.Message + "For Dryer Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        //Console.WriteLine(ex.Message);
+                    }
+
+                }
+                try
+                {
+                    PlcClass.dryerStack2.Read();
+                }
+                catch (libplctag.LibPlcTagException ex)
+                {
+                    if (ex.Message == "ErrorTimeout")
+                    {
+                        debugLog.WriteLine("Time out error " + ex.Message + "For Dryer Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                    }
+                    else
+                    {
+                        debugLog.WriteLine(ex.Message + "For Dryer Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                    }
+
+                }
+                try
+                {
+                    PlcClass.ventStack1.Read();
+                }
+                catch (libplctag.LibPlcTagException ex)
+                {
+                    if (ex.Message == "ErrorTimeout")
+                    {
+                        debugLog.WriteLine("Time out error " + ex.Message + "For Vent Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                    }
+                    else
+                    {
+                        debugLog.WriteLine(ex.Message + "For Vent Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                    }
+
+                }
+                try
+                {
+                    PlcClass.ventStack2.Read();
+                }
+                catch (libplctag.LibPlcTagException ex)
+                {
+                    if (ex.Message == "ErrorTimeout")
+                    {
+                        debugLog.WriteLine("Time out error " + ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                    }
+                    else
+                    {
+                        debugLog.WriteLine(ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                    }
+                }
+            }
+        }
+    }
 }
