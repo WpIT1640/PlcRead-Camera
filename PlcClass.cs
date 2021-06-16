@@ -24,7 +24,7 @@ dryer 2 stack is closed D302070EV01.ZSC
 */
     public class PlcClass
     {
-
+	   
        public static Tag<BoolPlcMapper,bool> dryerStack1 = new Tag<BoolPlcMapper, bool>()
             {
                 Name = "E321531EVO01.ZSO",
@@ -61,7 +61,6 @@ dryer 2 stack is closed D302070EV01.ZSC
             Protocol = Protocol.ab_eip,
             Timeout = TimeSpan.FromSeconds(5)
         };
-
-
+        public static List<Tag<BoolPlcMapper, bool>> listOfTags = new List<Tag<BoolPlcMapper, bool>>();		
     }
 }

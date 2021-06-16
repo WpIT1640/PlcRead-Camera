@@ -9,6 +9,10 @@ namespace PLCRead4
     {
         static void Main()
         {
+            PlcClass.listOfTags.Add(PlcClass.dryerStack1);
+            PlcClass.listOfTags.Add(PlcClass.dryerStack2);
+            PlcClass.listOfTags.Add(PlcClass.ventStack1);
+            PlcClass.listOfTags.Add(PlcClass.ventStack2);
 
             string StartupPath = @".\";
             string Year = DateTime.Now.Year.ToString();
@@ -16,14 +20,15 @@ namespace PLCRead4
             string Day = DateTime.Now.Day.ToString();
             Directory.CreateDirectory(StartupPath + "\\" + Year + "\\" + Month + "\\" + Day);
             string path = Year + @".\" + Month + @"\" + @"\" + Day + @"\" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
-
+            string[] tagNames;
+            tagNames = new string[4] { "Dryer1", "Dryer2", "Furnace Stack1", "Furnace Stack2" };
             //start by checking the stacks state
-            CheckStacks();
+            CheckStacks(tagNames);
             while (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == false)
             {
                 //reinitliaze and check the tags
-                CheckStacks();
-                LogToFile(path);
+                CheckStacks(tagNames);
+                LogToFile(path, tagNames);
                 //check if stacks have opened
                 //true means the stacks have opened.
                 if (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == true)
@@ -32,41 +37,43 @@ namespace PLCRead4
                     //stack is open so now we need to do a while loop
                     while (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == true)
                     {
-                        CheckStacks();
-                        LogToFile(path);
+                        CheckStacks(tagNames);
+                        LogToFile(path, tagNames);
                         //as long as stacks are open we loop
                         if (PlcClass.dryerStack1.Value | PlcClass.dryerStack2.Value | PlcClass.ventStack1.Value | PlcClass.ventStack2.Value == false)
                         {
                             Thread.Sleep(30 * 1000);
-                            LogToFile(path);
+                            LogToFile(path, tagNames);
                             cameraGrab(); //initial picture 30 seconds after the stacks are closed
                             for (int i = 0; i < 4; i++)
                             {
                                 Thread.Sleep(3 * 60 * 1000);
                                 cameraGrab();
-                                LogToFile(path);
+                                LogToFile(path, tagNames);
                             }
-                            CheckStacks();
+                            CheckStacks(tagNames);
                         }
                     }
                     //camera grab
                     cameraGrab();
-                    LogToFile(path);
+                    LogToFile(path, tagNames);
                     for (int i = 0; i < 4; i++)
                     {
                         Thread.Sleep(3 * 60 * 1000);
                         cameraGrab();
-                        LogToFile(path);
+                        LogToFile(path, tagNames);
                     }
-                    CheckStacks();
+                    CheckStacks(tagNames);
                 }
-                CheckStacks();
+                CheckStacks(tagNames);
             }
         }
 
         // Read the value from the PLC
-        private static void CheckStacks()
+        private static void CheckStacks(string[] tags)
         {
+            string[] tagNames = tags;
+            int i;
             String dateToday = DateTime.Now.ToString("dd.MM.yyy");
             //Setup Debugging
             string debugPath = @".\ " + dateToday + ".txt";
@@ -83,72 +90,23 @@ namespace PLCRead4
             }
             using (debugLog = File.AppendText(@".\ " + dateToday + ".txt"))
             {
-                try
+                for (i = 0; i < tagNames.Length; i++)
                 {
-                    PlcClass.dryerStack1.Read();
-                }
-                catch (libplctag.LibPlcTagException ex)
-                {
-                    if (ex.Message == "ErrorTimeout")
+                    try
                     {
+                        PLCRead4.PlcClass.listOfTags[i].Read();
+                    }
+                    catch (libplctag.LibPlcTagException ex)
+                    {
+                        if (ex.Message == "ErrorTimeout")
+                        {
+                            debugLog.WriteLine($"Time out error  {ex.Message} For {tagNames[i]} at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        }
 
-                        //debugLog.WriteLine(ex.Message);
-                        debugLog.WriteLine("Time out error " + ex.Message + "For Dryer Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-
-                    }
-
-                    else
-                    {
-                        debugLog.WriteLine(ex.Message + "For Dryer Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                        //Console.WriteLine(ex.Message);
-                    }
-
-                }
-                try
-                {
-                    PlcClass.dryerStack2.Read();
-                }
-                catch (libplctag.LibPlcTagException ex)
-                {
-                    if (ex.Message == "ErrorTimeout")
-                    {
-                        debugLog.WriteLine("Time out error " + ex.Message + "For Dryer Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                    }
-                    else
-                    {
-                        debugLog.WriteLine(ex.Message + "For Dryer Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                    }
-
-                }
-                try
-                {
-                    PlcClass.ventStack1.Read();
-                }
-                catch (libplctag.LibPlcTagException ex)
-                {
-                    if (ex.Message == "ErrorTimeout")
-                    {
-                        debugLog.WriteLine("Time out error " + ex.Message + "For Vent Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                    }
-                    else
-                    {
-                        debugLog.WriteLine(ex.Message + "For Vent Stack 1 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                    }
-
-                }
-                try
-                {
-                    PlcClass.ventStack2.Read();
-                }
-                catch (libplctag.LibPlcTagException ex)
-                {
-                    if (ex.Message == "ErrorTimeout")
-                    {
-                        debugLog.WriteLine("Time out error " + ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
-                    }
-                    else
-                    {
-                        debugLog.WriteLine(ex.Message + "For Vent Stack 2 at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        else
+                        {
+                            debugLog.WriteLine(ex.Message + $"For {tagNames[i]} at" + DateTime.Now.ToString("yyyy MM dd hh:mm:ss"));
+                        }
                     }
                 }
             }
@@ -159,58 +117,36 @@ namespace PLCRead4
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
         }
 
-        private static void LogToFile(string filepath)
+        private static void LogToFile(string filepath, string[] tags)
         {
-
+            string[] tagNames = tags;
+            int i;
             StreamWriter sw;
             if (!File.Exists(filepath))
             {
                 using (sw = File.CreateText(filepath))
                 {
+                    sw.WriteLine($"Begin Log");
                     //file is created
                 }
             }
 
-                using (sw = File.AppendText(filepath))
+            using (sw = File.AppendText(filepath))
+            {
+
+                for (i = 0; i < tagNames.Length; i++)
                 {
-                        sw.WriteLine($"Begin Log");
-
-                        if (PlcClass.dryerStack1.Value == false)
-                        {
-                            sw.WriteLine($"{DateTime.Now} Dryer stack 1 is closed");
-                        }
-                        else
-                        {
-                            sw.WriteLine($"{DateTime.Now} Dryer stack 1 is open");
-                        }
-
-                        if (PlcClass.dryerStack2.Value == false)
-                        {
-                            sw.WriteLine($"{DateTime.Now} Dryer stack 2 is closed");
-                        }
-                        else
-                        {
-                            sw.WriteLine($"{DateTime.Now} Dryer stack 2 is open");
-                        }
-                        if (PlcClass.ventStack1.Value == false)
-                        {
-                            sw.WriteLine($"{DateTime.Now} Furnace stack 1 is closed");
-                        }
-                        else
-                        {
-                            sw.WriteLine($"{DateTime.Now} Furnace stack 1 is open");
-                        }
-                        if (PlcClass.ventStack2.Value == false)
-                        {
-                            sw.WriteLine($"{DateTime.Now} Furnace stack 2 is closed");
-                        }
-                        else
-                        {
-                            sw.WriteLine($"{DateTime.Now} Furnace stack 2 is open");
-                        }
+                    if (PlcClass.listOfTags[i].Value == false)
+                    {
+                        sw.WriteLine($"{DateTime.Now} {tagNames[i]} is closed");
+                    }
+                    else
+                    {
+                        sw.WriteLine($"{DateTime.Now} {tagNames[i]} is open");
                     }
                 }
             }
-        
+        }
     }
+}
 
